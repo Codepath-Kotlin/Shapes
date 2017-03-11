@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_save"
+        android:id="@+id/action_rectangle"
         android:icon="@drawable/ic_check_box_outline_blank_black_24dp"
         android:title="Rectangle" />
     <item
-        android:id="@+id/action_restore"
+        android:id="@+id/action_circle"
         android:icon="@drawable/ic_panorama_fish_eye_black_24dp"
         android:title="Circle" />
     <item
-        android:id="@+id/action_erase"
+        android:id="@+id/action_text"
         android:icon="@drawable/ic_text_fields_black_24dp"
         app:showAsAction="ifRoom"
         android:title="Text" />

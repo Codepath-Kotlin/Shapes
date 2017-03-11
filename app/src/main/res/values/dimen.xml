@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="textFontSize">24sp</dimen>
+    <dimen name="rectangleSide">50dp</dimen>
+    <dimen name="circleRadius">50dp</dimen>
+</resources>

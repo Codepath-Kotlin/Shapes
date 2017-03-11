@@ -3,8 +3,8 @@ package com.codepath.shapes;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
@@ -14,17 +14,13 @@ import android.view.View;
 
 import com.codepath.shapes.shape.Shape;
 
+import java.util.LinkedList;
 import java.util.List;
-
-/**
- * Created by andre on 3/7/17.
- */
 
 public class Screen extends View {
 
-    @Nullable
-    private List<Shape> mShapeList;
-    private Paint mDefaultPaint = new Paint();
+    @NonNull
+    private List<Shape> mShapeList = new LinkedList<>();
 
     @Nullable
     private OnTapListener mOnTapListener;
@@ -48,8 +44,13 @@ public class Screen extends View {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    public void setShapeList(@Nullable List<Shape> shapeList) {
-        mShapeList = shapeList;
+    public void addShape(@Nullable Shape shape) {
+        mShapeList.add(shape);
+        invalidate();
+    }
+
+    public void clear() {
+        mShapeList.clear();
         invalidate();
     }
 
@@ -60,7 +61,7 @@ public class Screen extends View {
     public void init() {
         GestureDetector.SimpleOnGestureListener simpleOnGestureListener = new GestureDetector.SimpleOnGestureListener() {
             @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
+            public boolean onSingleTapUp(MotionEvent e) {
                 if (mOnTapListener != null) {
                     mOnTapListener.onTap(e.getX(), e.getY());
                 }
@@ -69,16 +70,13 @@ public class Screen extends View {
         };
         //TODO: Convert to single line using apply
         mGestureDetector = new GestureDetectorCompat(getContext(), simpleOnGestureListener);
-        mGestureDetector.setOnDoubleTapListener(simpleOnGestureListener);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (mShapeList != null) {
-            for (Shape shape : mShapeList) {
-                shape.draw(canvas, mDefaultPaint);
-            }
+        for (Shape shape : mShapeList) {
+            shape.draw(canvas);
         }
     }
 
