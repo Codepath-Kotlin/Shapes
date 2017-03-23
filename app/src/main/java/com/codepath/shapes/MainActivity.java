@@ -5,34 +5,41 @@ import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.codepath.shapes.databinding.ActivityMainBinding;
+import com.codepath.shapes.io.ShapeSerializer;
 import com.codepath.shapes.shape.Circle;
 import com.codepath.shapes.shape.Rectangle;
 import com.codepath.shapes.shape.Shape;
 import com.codepath.shapes.shape.Text;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding mBinding;
     private SelectShape mSelectedShape = SelectShape.RECTANGLE;
 
-    private
     @ColorInt
-    int mRectColor;
-    private
+    private int mRectColor;
+
     @ColorInt
-    int mCircleColor;
-    private
+    private int mCircleColor;
+
     @ColorInt
-    int mTextColor;
+    private int mTextColor;
+
+
     private float mRectangleSide;
     private float mCircleRadius;
     private float mTextSize;
+
+    private ShapeSerializer mShapeSerializer;
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -44,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
         mRectangleSide = getResources().getDimensionPixelOffset(R.dimen.rectangleSide);
         mCircleRadius = getResources().getDimensionPixelOffset(R.dimen.circleRadius);
         mTextSize = getResources().getDimension(R.dimen.textFontSize);
+
+        mShapeSerializer = new ShapeSerializer(this);
 
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         setSupportActionBar(mBinding.toolbar);
@@ -109,9 +118,22 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_save:
+                mShapeSerializer.saveShapes(mBinding.screen.getShapeList(), new ShapeSerializer.OnSaveFinishedCallback() {
+                    @Override
+                    public void onSaveFinished() {
+                        Snackbar.make(mBinding.getRoot(), "Saved", Snackbar.LENGTH_SHORT).show();
+                    }
+                });
                 return true;
 
             case R.id.action_restore:
+                mShapeSerializer.restoreShapes(new ShapeSerializer.OnRestoreFinishedCallback() {
+                    @Override
+                    public void onRestoreFinished(@NonNull List<Shape> shapeList) {
+                        Snackbar.make(mBinding.getRoot(), "Restored", Snackbar.LENGTH_SHORT).show();
+                        mBinding.screen.setShapeList(shapeList);
+                    }
+                });
                 return true;
 
             default:

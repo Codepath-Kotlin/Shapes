@@ -14,6 +14,7 @@ import android.view.View;
 
 import com.codepath.shapes.shape.Shape;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,8 +45,19 @@ public class Screen extends View {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    public void addShape(@Nullable Shape shape) {
+    public void addShape(@NonNull Shape shape) {
         mShapeList.add(shape);
+        invalidate();
+    }
+
+    @NonNull
+    public List<Shape> getShapeList() {
+        return Collections.unmodifiableList(mShapeList);
+    }
+
+    public void setShapeList(@NonNull List<Shape> shapeList) {
+        mShapeList.clear();
+        mShapeList.addAll(shapeList);
         invalidate();
     }
 

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Shapes</string>
+    <string name="save">Save</string>
+    <string name="restore">Restore</string>
+    <string name="erase">Erase</string>
+    <string name="rectangle">Rectangle</string>
+    <string name="circle">Circle</string>
+    <string name="text">Text</string>
 </resources>
