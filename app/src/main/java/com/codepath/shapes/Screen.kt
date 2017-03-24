@@ -9,12 +9,24 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import com.codepath.shapes.io.ShapeList
 import com.codepath.shapes.shape.Shape
+import java.util.*
 
 class Screen : View {
     var tapListener: ((x: Float, y: Float) -> Unit)? = null
-    private val shapeList = mutableListOf<Shape>()
+    private val internalShapeList = mutableListOf<Shape>()
     private var mGestureDetector: GestureDetectorCompat
+
+    var shapeList: ShapeList
+        get() = Collections.unmodifiableList(internalShapeList)
+        set(newList) {
+            internalShapeList.run {
+                clear()
+                addAll(newList)
+            }
+            invalidate()
+        }
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
@@ -34,18 +46,18 @@ class Screen : View {
     }
 
     fun addShape(shape: Shape) {
-        shapeList.add(shape)
+        internalShapeList.add(shape)
         invalidate()
     }
 
     fun clear() {
-        shapeList.clear()
+        internalShapeList.clear()
         invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        shapeList.forEach { it.draw(canvas) }
+        internalShapeList.forEach { it.draw(canvas) }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
