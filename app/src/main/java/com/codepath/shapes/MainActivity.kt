@@ -2,7 +2,8 @@ package com.codepath.shapes
 
 import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.annotation.ColorInt
+import android.support.annotation.ColorRes
+import android.support.annotation.DimenRes
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
@@ -18,30 +19,16 @@ class MainActivity : AppCompatActivity() {
     private var selectedShape = SelectShape.RECTANGLE
     private val shapeSerializer = ShapeSerializer(this)
 
-    @ColorInt
-    private var rectColor: Int = 0
+    private val rectColor by lazyColor(R.color.colorRectangle)
+    private val circleColor by lazyColor(R.color.colorCircle)
+    private val textColor by lazyColor(R.color.colorText)
 
-    @ColorInt
-    private var circleColor: Int = 0
-
-    @ColorInt
-    private var textColor: Int = 0
-
-    private var rectangleSide: Float = 0f
-    private var circleRadius: Float = 0f
-    private var textSize: Float = 0f
+    private val rectangleSide by lazyDimension(R.dimen.rectangleSide)
+    private val circleRadius by lazyDimension(R.dimen.circleRadius)
+    private val textSize by lazyFontSize(R.dimen.textFontSize)
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        with(resources) {
-            rectColor = getColor(R.color.colorRectangle)
-            circleColor = getColor(R.color.colorCircle)
-            textColor = getColor(R.color.colorText)
-            rectangleSide = getDimensionPixelOffset(R.dimen.rectangleSide).toFloat()
-            circleRadius = getDimensionPixelOffset(R.dimen.circleRadius).toFloat()
-            textSize = getDimension(R.dimen.textFontSize)
-        }
 
         binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main).apply {
             setSupportActionBar(toolbar)
@@ -86,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         R.id.action_restore -> {
             shapeSerializer.restoreShapes { shapeList ->
                 binding.screen.shapeList = shapeList
-                Snackbar.make(binding.root, "Restored", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(binding.root, "Restored", Snackbar.LENGTH_SHORT).show()
             }
             true
         }
@@ -96,4 +83,8 @@ class MainActivity : AppCompatActivity() {
     private enum class SelectShape {
         RECTANGLE, CIRCLE, TEXT
     }
+
+    private fun lazyColor(@ColorRes color: Int) = lazy({ resources.getColor(color) })
+    private fun lazyDimension(@DimenRes dimenRes: Int) = lazy({ resources.getDimensionPixelOffset(dimenRes).toFloat() })
+    private fun lazyFontSize(@DimenRes dimenRes: Int) = lazy({ resources.getDimension(dimenRes) })
 }

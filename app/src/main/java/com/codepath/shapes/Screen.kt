@@ -13,8 +13,10 @@ import com.codepath.shapes.io.ShapeList
 import com.codepath.shapes.shape.Shape
 import java.util.*
 
+typealias TapListener = (x: Float, y: Float) -> Unit
+
 class Screen : View {
-    var tapListener: ((x: Float, y: Float) -> Unit)? = null
+    var tapListener: (TapListener)? = null
     private val internalShapeList = mutableListOf<Shape>()
     private var mGestureDetector: GestureDetectorCompat
 

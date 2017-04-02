@@ -12,10 +12,11 @@ import com.codepath.shapes.shape.Text
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.*
+import java.io.File
+import java.io.IOException
 
-typealias OnSaveShapesCallback = () -> Unit
 typealias ShapeList = List<Shape>
+typealias OnSaveShapesCallback = () -> Unit
 typealias OnRestoreShapesCallBack = (ShapeList) -> Unit
 
 class ShapeSerializer(private val mContext: Context) {
@@ -38,30 +39,24 @@ class ShapeSerializer(private val mContext: Context) {
 
     @MainThread
     fun saveShapes(shapeList: ShapeList, callback: OnSaveShapesCallback) {
-        object : AsyncTask<ShapeList, Void, Boolean>() {
+        object : AsyncTask<ShapeList, Nothing, Unit>() {
             @SafeVarargs
-            override fun doInBackground(vararg params: ShapeList): Boolean {
-                internalSaveShapes(params.first())
-                return true
-            }
+            override fun doInBackground(vararg params: ShapeList) = internalSaveShapes(params.first())
 
-            override fun onPostExecute(aBoolean: Boolean?) = callback()
+            override fun onPostExecute(result: Unit?) = callback()
         }.execute(shapeList)
     }
 
     @MainThread
     fun restoreShapes(callback: OnRestoreShapesCallBack) {
-        object : AsyncTask<Void, Void, ShapeList>() {
+        object : AsyncTask<Void, Nothing, ShapeList>() {
             override fun doInBackground(vararg params: Void) = internalRestoreShapes()
             override fun onPostExecute(shapeList: ShapeList) = callback(shapeList)
         }.execute()
     }
 
     @WorkerThread
-    private fun internalSaveShapes(shapeList: ShapeList) {
-        val file = File(mContext.filesDir, FILENAME)
-        saveString(file, shapeList.toJsonString())
-    }
+    private fun internalSaveShapes(shapeList: ShapeList) = File(mContext.filesDir, FILENAME).writeText(shapeList.toJsonString())
 
     @WorkerThread
     private fun internalRestoreShapes(): ShapeList {
@@ -75,34 +70,34 @@ class ShapeSerializer(private val mContext: Context) {
     }
 
     private fun ShapeList.toJsonString(): String = try {
-        val result = JSONArray()
-        map { it.toJsonObject() }.forEach { result.put(it) }
-        result.toString()
+        JSONArray().apply {
+            map { shape -> shape.toJsonObject() }.forEach { put(it) }
+        }.toString()
     } catch (e: JSONException) {
         "[]"
     }
 
     private fun Shape.toJsonObject() = JSONObject().apply {
-        put(SHAPE_X, x.toDouble())
-        put(SHAPE_Y, y.toDouble())
-        put(SHAPE_COLOR, color)
+        put(SHAPE_X to x,
+                SHAPE_Y to y,
+                SHAPE_COLOR to color)
 
         when (this@toJsonObject) {
             is Circle -> {
-                put(SHAPE_TYPE, TYPE_CIRCLE)
-                put(CIRCLE_RADIUS, radius.toDouble())
+                put(SHAPE_TYPE to TYPE_CIRCLE,
+                        CIRCLE_RADIUS to radius)
             }
 
             is Rectangle -> {
-                put(SHAPE_TYPE, TYPE_RECTANGLE)
-                put(RECT_WIDTH, width.toDouble())
-                put(RECT_HEIGHT, height.toDouble())
+                put(SHAPE_TYPE to TYPE_RECTANGLE,
+                        RECT_WIDTH to width,
+                        RECT_HEIGHT to height)
             }
 
             is Text -> {
-                put(SHAPE_TYPE, TYPE_TEXT)
-                put(TEXT_TEXT, text)
-                put(TEXT_FONT_SIZE, fontSize.toDouble())
+                put(SHAPE_TYPE to TYPE_TEXT,
+                        TEXT_TEXT to text,
+                        TEXT_FONT_SIZE to fontSize)
             }
         }
     }
@@ -114,32 +109,32 @@ class ShapeSerializer(private val mContext: Context) {
             val jsonArray = JSONArray(jsonArrayString)
             for (i in 0 until jsonArray.length()) {
                 with(jsonArray.getJSONObject(i)) {
-                    val x = getDouble(SHAPE_X).toFloat()
-                    val y = getDouble(SHAPE_Y).toFloat()
+                    val x = getFloat(SHAPE_X)
+                    val y = getFloat(SHAPE_Y)
                     val color = getInt(SHAPE_COLOR)
                     val type = getString(SHAPE_TYPE)
 
                     val shape = when (type) {
                         TYPE_CIRCLE -> {
-                            val radius = getDouble(CIRCLE_RADIUS).toFloat()
+                            val radius = getFloat(CIRCLE_RADIUS)
                             Circle(x, y, color, radius)
                         }
 
                         TYPE_RECTANGLE -> {
-                            val width = getDouble(RECT_WIDTH).toFloat()
-                            val height = getDouble(RECT_HEIGHT).toFloat()
+                            val width = getFloat(RECT_WIDTH)
+                            val height = getFloat(RECT_HEIGHT)
                             Rectangle(x, y, color, width, height)
                         }
 
                         TYPE_TEXT -> {
                             val text = getString(TEXT_TEXT)
-                            val fontSize = getDouble(TEXT_FONT_SIZE).toFloat()
+                            val fontSize = getFloat(TEXT_FONT_SIZE)
                             Text(x, y, color, fontSize, text)
                         }
 
                         else -> null
                     }
-                    shape?.let { shapeList.add(it) }
+                    shape?.let { shapeList += it }
                 }
             }
         } catch (e: JSONException) {
@@ -150,19 +145,15 @@ class ShapeSerializer(private val mContext: Context) {
     }
 
     @WorkerThread
-    private fun saveString(file: File, string: String) {
-        try {
-            FileOutputStream(file).use { out -> out.write(string.toByteArray()) }
-        } catch (e: IOException) {
-            Log.e(TAG, "Failed to save file", e)
-        }
-    }
-
-    @WorkerThread
     private fun readString(file: File) = try {
-        FileInputStream(file).use { `in` -> BufferedReader(InputStreamReader(`in`)).readText() }
+        file.readText()
     } catch (e: IOException) {
         Log.e(TAG, "Failed to read file", e)
         "[]"
+    }
+
+    private fun JSONObject.getFloat(name: String) = getDouble(name).toFloat()
+    private fun JSONObject.put(vararg values: Pair<String, Any>) {
+        values.forEach { put(it.first, it.second) }
     }
 }
